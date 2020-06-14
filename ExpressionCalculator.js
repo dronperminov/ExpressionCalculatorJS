@@ -53,12 +53,12 @@ ExpressionCalculator.prototype.InitFunctions = function() {
 ExpressionCalculator.prototype.InitOperators = function() {
     this.operators = []
 
-    this.operators.push({ name: "+", priority: 1, isUnary: false, f: function(x, y) { return x + y }})
-    this.operators.push({ name: "-", priority: 1, isUnary: false, f: function(x, y) { return x - y }})
-    this.operators.push({ name: "*", priority: 2, isUnary: false, f: function(x, y) { return x * y }})
-    this.operators.push({ name: "/", priority: 2, isUnary: false, f: function(x, y) { return x / y }})
-    this.operators.push({ name: "%", priority: 2, isUnary: false, f: function(x, y) { return x % y }})
-    this.operators.push({ name: "^", priority: 5, isUnary: false, f: function(x, y) { return Math.pow(x, y) }})
+    this.operators.push({ name: "+", priority: 1, f: function(x, y) { return x + y }})
+    this.operators.push({ name: "-", priority: 1, f: function(x, y) { return x - y }})
+    this.operators.push({ name: "*", priority: 2, f: function(x, y) { return x * y }})
+    this.operators.push({ name: "/", priority: 2, f: function(x, y) { return x / y }})
+    this.operators.push({ name: "%", priority: 2, f: function(x, y) { return x % y }})
+    this.operators.push({ name: "^", priority: 5, f: function(x, y) { return Math.pow(x, y) }})
 
     this.operatorNames = [] // имена операций
 
@@ -71,7 +71,7 @@ ExpressionCalculator.prototype.InitRegExp = function() {
     let number = "\\d+\\.\\d+|\\d+" // ввещественные числа
     let operations = this.operatorNames.map(function(x) { return "\\" + x }).join("|") // операции
     let functions = this.functionNames.join("|") // функции
-    let variables = "[a-z\d]+" // ввещественные числа
+    let variables = "[a-z]+" // ввещественные числа
 
     this.regexp = new RegExp(number + "|\\(|\\)|" + operations + "|" + functions + "|" + variables, "gi")
 }
@@ -111,7 +111,7 @@ ExpressionCalculator.prototype.GetPriority = function(lexeme) {
         return this.operators[index].priority
     }
 
-    if (lexeme == "~")
+    if (lexeme == "!")
         return 4 // унарный минус
 
     return 0

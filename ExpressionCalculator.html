@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expression calculator</title>
+</head>
+<body>
+    <script src="ExpressionCalculator.js"></script>
+    <script>
+        let calculator = new ExpressionCalculator("sqrt(abs(x))")
+
+        for (let x = -10; x <= 10; x++) {
+            calculator.SetValue("x", x)
+            let res = calculator.Evaluate()
+            console.log(res)
+        }
+    </script>
+</body>
+</html>

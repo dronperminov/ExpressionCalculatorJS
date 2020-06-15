@@ -38,6 +38,13 @@
         TestCalculator("sqrt(x)", { "x": 625 }, 25)
         TestCalculator("sin(arcsin(x))", { "x": 0.4 }, 0.4)
         TestCalculator("e^pi - exp(2*acos(0))", { }, 0)
+        TestCalculator("lg(10000)", { }, 4)
+
+        TestCalculator("max(6, 8)", { }, 8)
+        TestCalculator("min(6, 8)", { }, 6)
+        TestCalculator("log(2, 8)", { }, 3)
+        TestCalculator("pow(2, 8)", { }, 256)
+        TestCalculator("root(4, 256)", { }, 4)
     </script>
 </body>
 </html>

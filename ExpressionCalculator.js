@@ -1,7 +1,8 @@
 function ExpressionCalculator(expression) {
-    this.expression = expression.replace(/\s/g, "").toLowerCase() // удаляем из выражения пробельные символы
+    this.expression = expression.toLowerCase() // удаляем из выражения пробельные символы
 
     this.InitFunctions() // инциализируем функции
+    this.InitBinaryFunctions() // инициализируем бинарные функции
     this.InitOperators() // инциализируем операторы
     this.InitConstants() // инициализируем константы
     this.InitRegExp() // инициализируем регулярное выражение
@@ -36,13 +37,24 @@ ExpressionCalculator.prototype.InitFunctions = function() {
 
     this.functions["ln"] = Math.log
     this.functions["log2"] = Math.log2
-    this.functions["log"] = Math.log10
+    this.functions["lg"] = Math.log10
     this.functions["exp"] = Math.exp
     
     this.functions["sqrt"] = Math.sqrt
     this.functions["cbrt"] = Math.cbrt
     this.functions["abs"] = Math.abs
     this.functions["sign"] = Math.sign
+}
+
+// инициализация бинарных функций
+ExpressionCalculator.prototype.InitBinaryFunctions = function() {
+    this.binaryFunctions = {}
+
+    this.binaryFunctions["max"] = Math.max
+    this.binaryFunctions["min"] = Math.min
+    this.binaryFunctions["log"] = function(x, y) { return Math.log(y) / Math.log(x) }
+    this.binaryFunctions["pow"] = function(x, y) { return Math.pow(x, y) }
+    this.binaryFunctions["root"] = function(x, y) { return Math.pow(y, 1.0 / x) }
 }
 
 // инициализация операций
@@ -73,23 +85,29 @@ ExpressionCalculator.prototype.InitRegExp = function() {
     let number = "\\d+\\.\\d+|\\d+" // ввещественные числа
     let operations = Object.keys(this.operators).map(function(x) { return "\\" + x }).join("|") // операции
     let functions = Object.keys(this.functions).join("|") // функции
+    let binaryFunctions = Object.keys(this.binaryFunctions).join("|") // бинарные функции
     let constants = Object.keys(this.constants).join("|") // константы
     let variables = "[a-z]+" // ввещественные числа
 
-    this.regexp = new RegExp(number + "|\\(|\\)|" + operations + "|" + functions + "|" + constants + "|" + variables, "gi")
+    this.regexp = new RegExp(number + "|\\(|\\)|,|" + operations + "|" + functions + "|" + binaryFunctions + "|" + constants + "|" + variables, "gi")
 }
 
 // парсинг на лексемы с проверкой на корректность
 ExpressionCalculator.prototype.SplitToLexemes = function() {
     this.lexemes = this.expression.match(this.regexp) // разбиваем на лексемы
 
-    if (this.lexemes.join("") != this.expression) // если выражения не совпадают
+    if (this.lexemes.join("") != this.expression.replace(/\s/g, "")) // если выражения не совпадают
         throw "Unknown characters in expression"; // значит есть некорректные символы
 }
 
 // проверка на функцию
 ExpressionCalculator.prototype.IsFunction = function(lexeme) {
     return lexeme in this.functions
+}
+
+// проверка на бинарную функцию
+ExpressionCalculator.prototype.IsBinaryFunction = function(lexeme) {
+    return lexeme in this.binaryFunctions
 }
 
 // проверка на операцию
@@ -114,13 +132,19 @@ ExpressionCalculator.prototype.IsVariable = function(lexeme) {
 
 // получение приоритета операции
 ExpressionCalculator.prototype.GetPriority = function(lexeme) {
-    if (this.IsOperator(lexeme))
-        return this.operators[lexeme].priority
+    if (this.IsFunction(lexeme) || this.IsBinaryFunction(lexeme))
+        return 100
 
     if (lexeme == "!")
         return 4 // унарный минус
 
-    return 0
+    if (this.IsOperator(lexeme))
+        return this.operators[lexeme].priority
+
+    if (lexeme == ",")
+        return 0
+
+    return -1
 }
 
 // получение польской записи
@@ -129,9 +153,10 @@ ExpressionCalculator.prototype.ConvertToRPN = function() {
     this.variables = {}
     let stack = []
     let mayUnary = true
+    let openBracket = false
 
     for (let lexeme of this.lexemes.values()) {
-        if (this.IsFunction(lexeme)) {
+        if (this.IsFunction(lexeme) || this.IsBinaryFunction(lexeme)) {
             stack.push(lexeme)
             mayUnary = true
         }
@@ -147,6 +172,7 @@ ExpressionCalculator.prototype.ConvertToRPN = function() {
         else if (lexeme == "(") {
             stack.push(lexeme)
             mayUnary = true
+            openBracket = true
         }
         else if (lexeme == ")") {
             while (stack.length > 0 && stack[stack.length - 1] != "(")
@@ -157,16 +183,20 @@ ExpressionCalculator.prototype.ConvertToRPN = function() {
 
             stack.pop()
             mayUnary = false
+            openBracket = false
         }
-        else if (this.IsOperator(lexeme)) {
+        else if (this.IsOperator(lexeme) || lexeme == ",") {
+            if (!openBracket && lexeme == ",")
+                throw "Incorrect expression: invalid ',' lexeme"
+
             if (lexeme == "-" && mayUnary)
                 lexeme = "!"; // унарный минус
 
-            while (stack.length > 0 && (this.IsFunction(stack[stack.length - 1]) || this.GetPriority(stack[stack.length - 1]) >= this.GetPriority(lexeme)))
+            while (stack.length > 0 && this.GetPriority(stack[stack.length - 1]) >= this.GetPriority(lexeme))
                 this.rpn.push(stack.pop())
 
             stack.push(lexeme)
-            mayUnary = lexeme == "^"
+            mayUnary = lexeme == "^" || lexeme == ","
         }
         else
             throw "Incorrect expression: unknown lexeme '" + lexeme + "'"
@@ -206,6 +236,15 @@ ExpressionCalculator.prototype.Evaluate = function() {
             let arg = stack.pop()
             stack.push(this.functions[lexeme](arg))
         }
+        else if (this.IsBinaryFunction(lexeme)) {
+            if (stack.length < 2)
+                throw "Incorrect expression"
+
+            let arg2 = stack.pop()
+            let arg1 = stack.pop()
+
+            stack.push(this.binaryFunctions[lexeme](arg1, arg2))
+        }
         else if (lexeme == "!") {
             if (stack.length < 1)
                 throw "Incorrect expression"
@@ -221,7 +260,7 @@ ExpressionCalculator.prototype.Evaluate = function() {
         else if (this.IsNumber(lexeme)) {
             stack.push(+lexeme)
         }
-        else
+        else if (lexeme != ",")
             throw "Unknown rpn lexeme '" + lexeme + "'"
     }
 

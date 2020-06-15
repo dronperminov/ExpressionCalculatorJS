@@ -54,7 +54,7 @@ ExpressionCalculator.prototype.InitOperators = function() {
     this.operators["*"] = { priority: 2, f: function(x, y) { return x * y }}
     this.operators["/"] = { priority: 2, f: function(x, y) { return x / y }}
     this.operators["%"] = { priority: 2, f: function(x, y) { return x % y }}
-    this.operators["^"] = { priority: 5, f: function(x, y) { return Math.pow(x, y) }}
+    this.operators["^"] = { priority: 3, f: function(x, y) { return Math.pow(x, y) }}
 }
 
 // инициализация констант
@@ -166,14 +166,14 @@ ExpressionCalculator.prototype.ConvertToRPN = function() {
                 this.rpn.push(stack.pop())
 
             stack.push(lexeme)
-            mayUnary = false
+            mayUnary = lexeme == "^"
         }
         else
             throw "Incorrect expression: unknown lexeme '" + lexeme + "'"
     }
 
     while (stack.length > 0) {
-        if (!this.IsOperator(stack[stack.length - 1]) && !this.IsFunction(stack[stack.length - 1]) && stack[stack.length - 1] != "!")
+        if (stack[stack.length - 1] == "(")
             throw "Incorrect expression: brackets are disbalanced"
 
         this.rpn.push(stack.pop())

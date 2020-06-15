@@ -11,75 +11,69 @@ function ExpressionCalculator(expression) {
 
 // инициализация функций
 ExpressionCalculator.prototype.InitFunctions = function() {
-    this.functions = []
+    this.functions = {}
 
-    this.functions.push({ name: "sin", f: Math.sin })
-    this.functions.push({ name: "cos", f: Math.cos })
-    this.functions.push({ name: "tan", f: Math.tan })
-    this.functions.push({ name: "tg", f: Math.tan })
-    this.functions.push({ name: "cot", f: function(x) { return 1.0 / Math.tan(x) } })
-    this.functions.push({ name: "ctg", f: function(x) { return 1.0 / Math.tan(x) } })
+    this.functions["sin"] = Math.sin
+    this.functions["cos"] = Math.cos
+    this.functions["tan"] = Math.tan
+    this.functions["tg"] = Math.tan
+    this.functions["cot"] = function(x) { return 1.0 / Math.tan(x) }
+    this.functions["ctg"] = function(x) { return 1.0 / Math.tan(x) }
 
-    this.functions.push({ name: "sinh", f: Math.sinh })
-    this.functions.push({ name: "sh", f: Math.sinh })
-    this.functions.push({ name: "cosh", f: Math.cosh })
-    this.functions.push({ name: "ch", f: Math.cosh })
-    this.functions.push({ name: "tanh", f: Math.tanh })
-    this.functions.push({ name: "th", f: Math.tanh })
+    this.functions["sinh"] = Math.sinh
+    this.functions["sh"] = Math.sinh
+    this.functions["cosh"] = Math.cosh
+    this.functions["ch"] = Math.cosh
+    this.functions["tanh"] = Math.tanh
+    this.functions["th"] = Math.tanh
 
-    this.functions.push({ name: "asin", f: Math.asin })
-    this.functions.push({ name: "arcsin", f: Math.asin })
-    this.functions.push({ name: "acos", f: Math.acos })
-    this.functions.push({ name: "arccos", f: Math.acos })
-    this.functions.push({ name: "arctg", f: Math.atan })
-    this.functions.push({ name: "atan", f: Math.atan })
+    this.functions["asin"] = Math.asin
+    this.functions["arcsin"] = Math.asin
+    this.functions["acos"] = Math.acos
+    this.functions["arccos"] = Math.acos
+    this.functions["arctg"] = Math.atan
+    this.functions["atan"] = Math.atan
 
-    this.functions.push({ name: "ln", f: Math.log })
-    this.functions.push({ name: "log2", f: Math.log2 })
-    this.functions.push({ name: "log", f: Math.log10 })
-    this.functions.push({ name: "exp", f: Math.exp })
+    this.functions["ln"] = Math.log
+    this.functions["log2"] = Math.log2
+    this.functions["log"] = Math.log10
+    this.functions["exp"] = Math.exp
     
-    this.functions.push({ name: "sqrt", f: Math.sqrt })
-    this.functions.push({ name: "cbrt", f: Math.cbrt })
-    this.functions.push({ name: "abs", f: Math.abs })
-    this.functions.push({ name: "sign", f: Math.sign })
-
-    this.functionNames = this.functions.map(function(c) { return c.name }) // имена функций
+    this.functions["sqrt"] = Math.sqrt
+    this.functions["cbrt"] = Math.cbrt
+    this.functions["abs"] = Math.abs
+    this.functions["sign"] = Math.sign
 }
 
 // инициализация операций
 ExpressionCalculator.prototype.InitOperators = function() {
-    this.operators = []
+    this.operators = {}
 
-    this.operators.push({ name: "+", priority: 1, f: function(x, y) { return x + y }})
-    this.operators.push({ name: "-", priority: 1, f: function(x, y) { return x - y }})
-    this.operators.push({ name: "*", priority: 2, f: function(x, y) { return x * y }})
-    this.operators.push({ name: "/", priority: 2, f: function(x, y) { return x / y }})
-    this.operators.push({ name: "%", priority: 2, f: function(x, y) { return x % y }})
-    this.operators.push({ name: "^", priority: 5, f: function(x, y) { return Math.pow(x, y) }})
-
-    this.operatorNames = this.operators.map(function(c) { return c.name }) // имена операций
+    this.operators["+"] = { priority: 1, f: function(x, y) { return x + y }}
+    this.operators["-"] = { priority: 1, f: function(x, y) { return x - y }}
+    this.operators["*"] = { priority: 2, f: function(x, y) { return x * y }}
+    this.operators["/"] = { priority: 2, f: function(x, y) { return x / y }}
+    this.operators["%"] = { priority: 2, f: function(x, y) { return x % y }}
+    this.operators["^"] = { priority: 5, f: function(x, y) { return Math.pow(x, y) }}
 }
 
 // инициализация констант
 ExpressionCalculator.prototype.InitConstants = function() {
-    this.constants = []
+    this.constants = {}
 
-    this.constants.push({ name: "pi", value: Math.PI })
-    this.constants.push({ name: "e", value: Math.E })
-    this.constants.push({ name: "ln2", value: Math.LN2 })
-    this.constants.push({ name: "ln10", value: Math.LN10 })
-    this.constants.push({ name: "sqrt2", value: Math.SQRT2 })
-
-    this.constantNames = this.constants.map(function(c) { return c.name }) // имена констант
+    this.constants["pi"] = Math.PI
+    this.constants["e"] = Math.E
+    this.constants["ln2"] = Math.LN2
+    this.constants["ln10"] = Math.LN10
+    this.constants["sqrt2"] = Math.SQRT2
 }
 
 // инициализация регулярного выражения
 ExpressionCalculator.prototype.InitRegExp = function() {
     let number = "\\d+\\.\\d+|\\d+" // ввещественные числа
-    let operations = this.operatorNames.map(function(x) { return "\\" + x }).join("|") // операции
-    let functions = this.functionNames.join("|") // функции
-    let constants = this.constantNames.join("|")
+    let operations = Object.keys(this.operators).map(function(x) { return "\\" + x }).join("|") // операции
+    let functions = Object.keys(this.functions).join("|") // функции
+    let constants = Object.keys(this.constants).join("|") // константы
     let variables = "[a-z]+" // ввещественные числа
 
     this.regexp = new RegExp(number + "|\\(|\\)|" + operations + "|" + functions + "|" + constants + "|" + variables, "gi")
@@ -95,17 +89,17 @@ ExpressionCalculator.prototype.SplitToLexemes = function() {
 
 // проверка на функцию
 ExpressionCalculator.prototype.IsFunction = function(lexeme) {
-    return this.functionNames.indexOf(lexeme) > -1
+    return lexeme in this.functions
 }
 
 // проверка на операцию
 ExpressionCalculator.prototype.IsOperator = function(lexeme) {
-    return this.operatorNames.indexOf(lexeme) > -1
+    return lexeme in this.operators
 }
 
 // проверка на константу
 ExpressionCalculator.prototype.IsConstant = function(lexeme) {
-    return this.constantNames.indexOf(lexeme) > -1
+    return lexeme in this.constants
 }
 
 // проверка на число
@@ -120,10 +114,8 @@ ExpressionCalculator.prototype.IsVariable = function(lexeme) {
 
 // получение приоритета операции
 ExpressionCalculator.prototype.GetPriority = function(lexeme) {
-    if (this.IsOperator(lexeme)) {
-        let index = this.operatorNames.indexOf(lexeme)
-        return this.operators[index].priority
-    }
+    if (this.IsOperator(lexeme))
+        return this.operators[lexeme].priority
 
     if (lexeme == "!")
         return 4 // унарный минус
@@ -202,19 +194,17 @@ ExpressionCalculator.prototype.Evaluate = function() {
             if (stack.length < 2)
                 throw "Incorrect expression"
 
-            let index = this.operatorNames.indexOf(lexeme)
             let arg2 = stack.pop()
             let arg1 = stack.pop()
 
-            stack.push(this.operators[index].f(arg1, arg2))
+            stack.push(this.operators[lexeme].f(arg1, arg2))
         }
         else if (this.IsFunction(lexeme)) {
             if (stack.length < 1)
                 throw "Incorrect expression"
 
             let arg = stack.pop()
-            let index = this.functionNames.indexOf(lexeme)
-            stack.push(this.functions[index].f(arg))
+            stack.push(this.functions[lexeme](arg))
         }
         else if (lexeme == "!") {
             if (stack.length < 1)
@@ -223,8 +213,7 @@ ExpressionCalculator.prototype.Evaluate = function() {
             stack.push(-stack.pop())
         }
         else if (this.IsConstant(lexeme)) {
-            let index = this.constantNames.indexOf(lexeme)
-            stack.push(this.constants[index].value)
+            stack.push(this.constants[lexeme])
         }
         else if (this.IsVariable(lexeme)) {
             stack.push(this.variables[lexeme])

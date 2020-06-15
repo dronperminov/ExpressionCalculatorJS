@@ -1,11 +1,12 @@
 function ExpressionCalculator(expression) {
-    this.expression = expression.replace(/\s/g, "") // удаляем из выражения пробельные символы
+    this.expression = expression.replace(/\s/g, "").toLowerCase() // удаляем из выражения пробельные символы
 
     this.InitFunctions() // инциализируем функции
     this.InitOperators() // инциализируем операторы
+    this.InitConstants() // инициализируем константы
     this.InitRegExp() // инициализируем регулярное выражение
     this.SplitToLexemes() // разбиваем на лексемы
-    this.ConvertToRPN()
+    this.ConvertToRPN() // получаем польскую запись
 }
 
 // инициализация функций
@@ -43,10 +44,7 @@ ExpressionCalculator.prototype.InitFunctions = function() {
     this.functions.push({ name: "abs", f: Math.abs })
     this.functions.push({ name: "sign", f: Math.sign })
 
-    this.functionNames = [] // имена функций
-
-    for (let i = 0; i < this.functions.length; i++)
-        this.functionNames.push(this.functions[i].name)
+    this.functionNames = this.functions.map(function(c) { return c.name }) // имена функций
 }
 
 // инициализация операций
@@ -60,10 +58,20 @@ ExpressionCalculator.prototype.InitOperators = function() {
     this.operators.push({ name: "%", priority: 2, f: function(x, y) { return x % y }})
     this.operators.push({ name: "^", priority: 5, f: function(x, y) { return Math.pow(x, y) }})
 
-    this.operatorNames = [] // имена операций
+    this.operatorNames = this.operators.map(function(c) { return c.name }) // имена операций
+}
 
-    for (let i = 0; i < this.operators.length; i++)
-        this.operatorNames.push(this.operators[i].name)
+// инициализация констант
+ExpressionCalculator.prototype.InitConstants = function() {
+    this.constants = []
+
+    this.constants.push({ name: "pi", value: Math.PI })
+    this.constants.push({ name: "e", value: Math.E })
+    this.constants.push({ name: "ln2", value: Math.LN2 })
+    this.constants.push({ name: "ln10", value: Math.LN10 })
+    this.constants.push({ name: "sqrt2", value: Math.SQRT2 })
+
+    this.constantNames = this.constants.map(function(c) { return c.name }) // имена констант
 }
 
 // инициализация регулярного выражения
@@ -71,9 +79,10 @@ ExpressionCalculator.prototype.InitRegExp = function() {
     let number = "\\d+\\.\\d+|\\d+" // ввещественные числа
     let operations = this.operatorNames.map(function(x) { return "\\" + x }).join("|") // операции
     let functions = this.functionNames.join("|") // функции
+    let constants = this.constantNames.join("|")
     let variables = "[a-z]+" // ввещественные числа
 
-    this.regexp = new RegExp(number + "|\\(|\\)|" + operations + "|" + functions + "|" + variables, "gi")
+    this.regexp = new RegExp(number + "|\\(|\\)|" + operations + "|" + functions + "|" + constants + "|" + variables, "gi")
 }
 
 // парсинг на лексемы с проверкой на корректность
@@ -92,6 +101,11 @@ ExpressionCalculator.prototype.IsFunction = function(lexeme) {
 // проверка на операцию
 ExpressionCalculator.prototype.IsOperator = function(lexeme) {
     return this.operatorNames.indexOf(lexeme) > -1
+}
+
+// проверка на константу
+ExpressionCalculator.prototype.IsConstant = function(lexeme) {
+    return this.constantNames.indexOf(lexeme) > -1
 }
 
 // проверка на число
@@ -129,7 +143,7 @@ ExpressionCalculator.prototype.ConvertToRPN = function() {
             stack.push(lexeme)
             mayUnary = true
         }
-        else if (this.IsNumber(lexeme)) {
+        else if (this.IsNumber(lexeme) || this.IsConstant(lexeme)) {
             this.rpn.push(lexeme)
             mayUnary = false
         }
@@ -207,6 +221,10 @@ ExpressionCalculator.prototype.Evaluate = function() {
                 throw "Incorrect expression"
 
             stack.push(-stack.pop())
+        }
+        else if (this.IsConstant(lexeme)) {
+            let index = this.constantNames.indexOf(lexeme)
+            stack.push(this.constants[index].value)
         }
         else if (this.IsVariable(lexeme)) {
             stack.push(this.variables[lexeme])

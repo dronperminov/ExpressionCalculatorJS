@@ -13,6 +13,31 @@
             let res = calculator.Evaluate()
             console.log(res)
         }
+
+        function TestCalculator(expression, variables, answer, eps=1e-10) {
+            let calculator = new ExpressionCalculator(expression)
+
+            for (let name in variables)
+                calculator.SetValue(name, variables[name])
+
+            let result = calculator.Evaluate()
+
+            if (Math.abs(result - answer) > eps)
+                console.log("FAILED: ", expression, ": ", result, "!=", answer)
+            else
+                console.log("OK")
+        }
+
+        TestCalculator("pi", {}, Math.PI)
+        TestCalculator("1+2+3+4", {}, 10)
+        TestCalculator("(1+2)*(3+4)", {}, 21)
+        TestCalculator("4^-2", {}, 1 / 16)
+        TestCalculator("4^(-2)", {}, 1 / 16)
+        TestCalculator("4^-2*4", {}, 0.25)
+        TestCalculator("sqrt(25 - abs(3 * (2 - 5)))", {}, 4)
+        TestCalculator("sqrt(x)", { "x": 625 }, 25)
+        TestCalculator("sin(arcsin(x))", { "x": 0.4 }, 0.4)
+        TestCalculator("e^pi - exp(2*acos(0))", { }, 0)
     </script>
 </body>
 </html>

@@ -39,6 +39,9 @@
         TestCalculator("sin(arcsin(x))", { "x": 0.4 }, 0.4)
         TestCalculator("e^pi - exp(2*acos(0))", { }, 0)
         TestCalculator("lg(10000)", { }, 4)
+        TestCalculator("2^2^3", { }, 256)
+        TestCalculator("(2^2)^3", { }, 64)
+        TestCalculator("2^(2^3)", { }, 256)
 
         TestCalculator("max(6, 8)", { }, 8)
         TestCalculator("min(6, 8)", { }, 6)

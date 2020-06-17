@@ -61,12 +61,12 @@ ExpressionCalculator.prototype.InitBinaryFunctions = function() {
 ExpressionCalculator.prototype.InitOperators = function() {
     this.operators = {}
 
-    this.operators["+"] = { priority: 1, f: function(x, y) { return x + y }}
-    this.operators["-"] = { priority: 1, f: function(x, y) { return x - y }}
-    this.operators["*"] = { priority: 2, f: function(x, y) { return x * y }}
-    this.operators["/"] = { priority: 2, f: function(x, y) { return x / y }}
-    this.operators["%"] = { priority: 2, f: function(x, y) { return x % y }}
-    this.operators["^"] = { priority: 3, f: function(x, y) { return Math.pow(x, y) }}
+    this.operators["+"] = { priority: 1, isRight: false, f: function(x, y) { return x + y }}
+    this.operators["-"] = { priority: 1, isRight: false, f: function(x, y) { return x - y }}
+    this.operators["*"] = { priority: 2, isRight: false, f: function(x, y) { return x * y }}
+    this.operators["/"] = { priority: 2, isRight: false, f: function(x, y) { return x / y }}
+    this.operators["%"] = { priority: 2, isRight: false, f: function(x, y) { return x % y }}
+    this.operators["^"] = { priority: 3, isRight: true, f: function(x, y) { return Math.pow(x, y) }}
 }
 
 // инициализация констант
@@ -147,6 +147,14 @@ ExpressionCalculator.prototype.GetPriority = function(lexeme) {
     return -1
 }
 
+// проверка, что текущая лексема менее приоритетна лексемы на вершине стека
+ExpressionCalculator.prototype.IsMorePriority = function(curr, top) {
+    if (!this.IsOperator(curr) || !this.operators[curr].isRight)
+        return this.GetPriority(top) >= this.GetPriority(curr)
+
+    return this.GetPriority(top) > this.GetPriority(curr)
+}
+
 // получение польской записи
 ExpressionCalculator.prototype.ConvertToRPN = function() {
     this.rpn = []
@@ -192,7 +200,7 @@ ExpressionCalculator.prototype.ConvertToRPN = function() {
             if (lexeme == "-" && mayUnary)
                 lexeme = "!"; // унарный минус
 
-            while (stack.length > 0 && this.GetPriority(stack[stack.length - 1]) >= this.GetPriority(lexeme))
+            while (stack.length > 0 && this.IsMorePriority(lexeme, stack[stack.length - 1]))
                 this.rpn.push(stack.pop())
 
             stack.push(lexeme)

@@ -82,12 +82,12 @@ ExpressionCalculator.prototype.InitConstants = function() {
 
 // инициализация регулярного выражения
 ExpressionCalculator.prototype.InitRegExp = function() {
-    let number = "\\d+\\.\\d+|\\d+" // ввещественные числа
+    let number = "\\d+\\.\\d+|\\d+" // вещественные числа
     let operations = Object.keys(this.operators).map(function(x) { return "\\" + x }).join("|") // операции
     let functions = Object.keys(this.functions).join("|") // функции
     let binaryFunctions = Object.keys(this.binaryFunctions).join("|") // бинарные функции
     let constants = Object.keys(this.constants).join("|") // константы
-    let variables = "[a-z]+" // ввещественные числа
+    let variables = "[a-z][a-z\\d]*" // переменные
 
     this.regexp = new RegExp(number + "|\\(|\\)|,|" + operations + "|" + functions + "|" + binaryFunctions + "|" + constants + "|" + variables, "gi")
 }
@@ -127,7 +127,7 @@ ExpressionCalculator.prototype.IsNumber = function(lexeme) {
 
 // проверка на переменную
 ExpressionCalculator.prototype.IsVariable = function(lexeme) {
-    return lexeme.match(/^[a-z]+/gi) != null
+    return lexeme.match(/^[a-z][a-z\d]*/gi) != null
 }
 
 // получение приоритета операции
@@ -161,42 +161,29 @@ ExpressionCalculator.prototype.ConvertToRPN = function() {
     this.variables = {}
     let stack = []
     let mayUnary = true
-    let openBracket = false
 
     for (let lexeme of this.lexemes.values()) {
-        if (this.IsFunction(lexeme) || this.IsBinaryFunction(lexeme)) {
-            stack.push(lexeme)
-            mayUnary = true
-        }
-        else if (this.IsNumber(lexeme) || this.IsConstant(lexeme)) {
+        if (this.IsNumber(lexeme) || this.IsConstant(lexeme)) {
             this.rpn.push(lexeme)
             mayUnary = false
+        }
+        else if (this.IsFunction(lexeme) || this.IsBinaryFunction(lexeme)) {
+            stack.push(lexeme)
+            mayUnary = true
         }
         else if (this.IsVariable(lexeme)) {
             this.rpn.push(lexeme)
             this.variables[lexeme] = 0
             mayUnary = false
         }
-        else if (lexeme == "(") {
-            stack.push(lexeme)
-            mayUnary = true
-            openBracket = true
-        }
-        else if (lexeme == ")") {
+        else if (lexeme == ",") {
             while (stack.length > 0 && stack[stack.length - 1] != "(")
                 this.rpn.push(stack.pop())
 
             if (stack.length == 0)
                 throw "Incorrect expression"
-
-            stack.pop()
-            mayUnary = false
-            openBracket = false
         }
-        else if (this.IsOperator(lexeme) || lexeme == ",") {
-            if (!openBracket && lexeme == ",")
-                throw "Incorrect expression: invalid ',' lexeme"
-
+        else if (this.IsOperator(lexeme)) {
             if (lexeme == "-" && mayUnary)
                 lexeme = "!"; // унарный минус
 
@@ -204,7 +191,25 @@ ExpressionCalculator.prototype.ConvertToRPN = function() {
                 this.rpn.push(stack.pop())
 
             stack.push(lexeme)
-            mayUnary = lexeme == "^" || lexeme == ","
+            mayUnary = lexeme == "^"
+        }
+        else if (lexeme == "(") {
+            stack.push(lexeme)
+            mayUnary = true
+        }
+        else if (lexeme == ")") {
+            while (stack.length > 0 && stack[stack.length - 1] != "(")
+                this.rpn.push(stack.pop())
+
+            if (stack.length == 0)
+                throw "Incorrect expression: brackets are disbalanced"
+
+            stack.pop()
+
+            if (this.IsFunction(stack[stack.length - 1]))
+                this.rpn.push(stack.pop())
+
+            mayUnary = false
         }
         else
             throw "Incorrect expression: unknown lexeme '" + lexeme + "'"
@@ -230,7 +235,7 @@ ExpressionCalculator.prototype.Evaluate = function() {
     for (let lexeme of this.rpn.values()) {
         if (this.IsOperator(lexeme)) {
             if (stack.length < 2)
-                throw "Incorrect expression"
+                throw "Unable to evaluate operator '" + lexeme + "'"
 
             let arg2 = stack.pop()
             let arg1 = stack.pop()
@@ -239,14 +244,14 @@ ExpressionCalculator.prototype.Evaluate = function() {
         }
         else if (this.IsFunction(lexeme)) {
             if (stack.length < 1)
-                throw "Incorrect expression"
+                throw "Unable to evaluate function '" + lexeme + "'"
 
             let arg = stack.pop()
             stack.push(this.functions[lexeme](arg))
         }
         else if (this.IsBinaryFunction(lexeme)) {
             if (stack.length < 2)
-                throw "Incorrect expression"
+                throw "Unable to evaluate function '" + lexeme + "'"
 
             let arg2 = stack.pop()
             let arg1 = stack.pop()
@@ -255,7 +260,7 @@ ExpressionCalculator.prototype.Evaluate = function() {
         }
         else if (lexeme == "!") {
             if (stack.length < 1)
-                throw "Incorrect expression"
+                throw "Unable to evaluate unary minus"
 
             stack.push(-stack.pop())
         }
@@ -268,7 +273,7 @@ ExpressionCalculator.prototype.Evaluate = function() {
         else if (this.IsNumber(lexeme)) {
             stack.push(+lexeme)
         }
-        else if (lexeme != ",")
+        else
             throw "Unknown rpn lexeme '" + lexeme + "'"
     }
 

@@ -48,6 +48,10 @@
         TestCalculator("log(2, 8)", { }, 3)
         TestCalculator("pow(2, 8)", { }, 256)
         TestCalculator("root(4, 256)", { }, 4)
+        TestCalculator("root(8 / 4 + log(2, 4), 2 ^ 8)", { }, 4)
+        
+        TestCalculator("(x1 + x2) ^ 2", { "x1": 3, "x2": 5 }, 64)
+        TestCalculator("(x123 + x26x) ^ 2", { "x123": 3, "x26x": 5 }, 64)
     </script>
 </body>
 </html>

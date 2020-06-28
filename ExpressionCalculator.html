@@ -44,6 +44,10 @@
         TestCalculator("2^(2^3)", { }, 256)
         TestCalculator("-1^2", { }, -1)
         TestCalculator("(-1)^2", { }, 1)
+        TestCalculator("2^-2^2", { }, 1 / 16)
+        TestCalculator("2^(-2)^2", { }, 16)
+        TestCalculator("(2^-2)^2", { }, 1 / 16)
+        TestCalculator("2^-2^-2", { }, Math.pow(2, -0.25))
 
         TestCalculator("max(6, 8)", { }, 8)
         TestCalculator("min(6, 8)", { }, 6)

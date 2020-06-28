@@ -136,23 +136,20 @@ ExpressionCalculator.prototype.GetPriority = function(lexeme) {
         return 100
 
     if (lexeme == "!")
-        return 4 // унарный минус
+        return this.operators["^"].priority // унарный минус
 
     if (this.IsOperator(lexeme))
         return this.operators[lexeme].priority
-
-    if (lexeme == ",")
-        return 0
 
     return -1
 }
 
 // проверка, что текущая лексема менее приоритетна лексемы на вершине стека
 ExpressionCalculator.prototype.IsMorePriority = function(curr, top) {
-    if (!this.IsOperator(curr) || !this.operators[curr].isRight)
-        return this.GetPriority(top) >= this.GetPriority(curr)
+    if (this.IsOperator(curr) && this.operators[curr].isRight || curr == '!')
+        return this.GetPriority(top) > this.GetPriority(curr)
 
-    return this.GetPriority(top) > this.GetPriority(curr)
+    return this.GetPriority(top) >= this.GetPriority(curr)
 }
 
 // получение польской записи

@@ -61,12 +61,12 @@ ExpressionCalculator.prototype.InitBinaryFunctions = function() {
 ExpressionCalculator.prototype.InitOperators = function() {
     this.operators = {}
 
-    this.operators["+"] = { priority: 1, isRight: false, f: function(x, y) { return x + y }}
-    this.operators["-"] = { priority: 1, isRight: false, f: function(x, y) { return x - y }}
-    this.operators["*"] = { priority: 2, isRight: false, f: function(x, y) { return x * y }}
-    this.operators["/"] = { priority: 2, isRight: false, f: function(x, y) { return x / y }}
-    this.operators["%"] = { priority: 2, isRight: false, f: function(x, y) { return x % y }}
-    this.operators["^"] = { priority: 3, isRight: true, f: function(x, y) { return Math.pow(x, y) }}
+    this.operators["+"] = function(x, y) { return x + y }
+    this.operators["-"] = function(x, y) { return x - y }
+    this.operators["*"] = function(x, y) { return x * y }
+    this.operators["/"] = function(x, y) { return x / y }
+    this.operators["%"] = function(x, y) { return x % y }
+    this.operators["^"] = function(x, y) { return Math.pow(x, y) }
 }
 
 // инициализация констант
@@ -133,20 +133,23 @@ ExpressionCalculator.prototype.IsVariable = function(lexeme) {
 // получение приоритета операции
 ExpressionCalculator.prototype.GetPriority = function(lexeme) {
     if (this.IsFunction(lexeme) || this.IsBinaryFunction(lexeme))
-        return 100
+        return 4
 
-    if (lexeme == "!")
-        return this.operators["^"].priority // унарный минус
+    if (lexeme == "!" || lexeme == "^")
+        return 3
 
-    if (this.IsOperator(lexeme))
-        return this.operators[lexeme].priority
+    if (lexeme == "*" || lexeme == "/" || lexeme == "%")
+        return 2
 
-    return -1
+    if (lexeme == "+" || lexeme == "-")
+        return 1
+
+    return 0
 }
 
 // проверка, что текущая лексема менее приоритетна лексемы на вершине стека
 ExpressionCalculator.prototype.IsMorePriority = function(curr, top) {
-    if (this.IsOperator(curr) && this.operators[curr].isRight || curr == '!')
+    if (curr == "^" || curr == '!')
         return this.GetPriority(top) > this.GetPriority(curr)
 
     return this.GetPriority(top) >= this.GetPriority(curr)
@@ -237,7 +240,7 @@ ExpressionCalculator.prototype.Evaluate = function() {
             let arg2 = stack.pop()
             let arg1 = stack.pop()
 
-            stack.push(this.operators[lexeme].f(arg1, arg2))
+            stack.push(this.operators[lexeme](arg1, arg2))
         }
         else if (this.IsFunction(lexeme)) {
             if (stack.length < 1)

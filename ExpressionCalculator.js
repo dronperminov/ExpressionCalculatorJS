@@ -206,7 +206,7 @@ ExpressionCalculator.prototype.ConvertToRPN = function() {
 
             stack.pop()
 
-            if (this.IsFunction(stack[stack.length - 1]))
+            if (stack.length > 0 && this.IsFunction(stack[stack.length - 1]))
                 this.rpn.push(stack.pop())
 
             mayUnary = false

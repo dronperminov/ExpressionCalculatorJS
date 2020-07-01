@@ -36,8 +36,19 @@ ExpressionCalculator.prototype.InitFunctions = function() {
     this.functions["arctg"] = Math.atan
     this.functions["atan"] = Math.atan
 
+    this.functions["asinh"] = Math.asinh
+    this.functions["arsinh"] = Math.asinh
+    this.functions["arsh"] = Math.asinh
+    this.functions["acosh"] = Math.acosh
+    this.functions["arcosh"] = Math.acosh
+    this.functions["arch"] = Math.acosh
+    this.functions["artanh"] = Math.atanh
+    this.functions["atanh"] = Math.atanh
+    this.functions["arth"] = Math.atanh
+
     this.functions["ln"] = Math.log
     this.functions["log2"] = Math.log2
+    this.functions["log10"] = Math.log10
     this.functions["lg"] = Math.log10
     this.functions["exp"] = Math.exp
     
@@ -45,6 +56,11 @@ ExpressionCalculator.prototype.InitFunctions = function() {
     this.functions["cbrt"] = Math.cbrt
     this.functions["abs"] = Math.abs
     this.functions["sign"] = Math.sign
+
+    this.functions["floor"] = Math.floor
+    this.functions["round"] = Math.round
+    this.functions["trunc"] = Math.trunc
+    this.functions["ceil"] = Math.ceil
 }
 
 // инициализация бинарных функций

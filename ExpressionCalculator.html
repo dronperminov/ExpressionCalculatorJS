@@ -71,6 +71,16 @@
         TestCalculator("3! ", {}, 6)
         TestCalculator("4! ", {}, 24)
         TestCalculator("(log(2, 8)+1)! ", {}, 24)
+
+        TestCalculator("floor(34.56)", {}, 34)
+        TestCalculator("round(34.56)", {}, 35)
+        TestCalculator("trunc(34.56)", {}, 34)
+        TestCalculator("ceil(34.56)", {}, 35)
+
+        TestCalculator("floor(-34.56)", {}, -35)
+        TestCalculator("round(-34.56)", {}, -35)
+        TestCalculator("trunc(-34.56)", {}, -34)
+        TestCalculator("ceil(-34.56)", {}, -34)
     </script>
 </body>
 </html>

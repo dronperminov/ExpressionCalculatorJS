@@ -55,9 +55,22 @@
         TestCalculator("pow(2, 8)", { }, 256)
         TestCalculator("root(4, 256)", { }, 4)
         TestCalculator("root(8 / 4 + log(2, 4), 2 ^ 8)", { }, 4)
-        
+
         TestCalculator("(x1 + x2) ^ 2", { "x1": 3, "x2": 5 }, 64)
         TestCalculator("(x123 + x26x) ^ 2", { "x123": 3, "x26x": 5 }, 64)
+
+        TestCalculator("12 mod 5", {}, 2)
+        TestCalculator("12% ", {}, 0.12)
+        TestCalculator("12% ", {}, 0.12)
+        TestCalculator("12%% ", {}, 0.0012)
+        TestCalculator("100 + 15% ", {}, 100.15)
+        
+        TestCalculator("0! ", {}, 1)
+        TestCalculator("1! ", {}, 1)
+        TestCalculator("2! ", {}, 2)
+        TestCalculator("3! ", {}, 6)
+        TestCalculator("4! ", {}, 24)
+        TestCalculator("(log(2, 8)+1)! ", {}, 24)
     </script>
 </body>
 </html>
